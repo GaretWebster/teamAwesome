@@ -65,10 +65,11 @@
 		<li><a href="index.jsp">Home</a></li>
 		<li><a href="categories.jsp">Categories</a></li>
 		<li><a href="products.jsp">Products</a></li>
-		<li><a href="orders.jsp">Orders</a></li>
 		<li><a href="browsing.jsp">Product Browsing</a></li>
 		<li><a href="carts.jsp">Carts</a></li>
 		<li><a href="purchases.jsp">Purchases</a></li>
+		<li><a href="orders.jsp">Orders</a></li>
+		<li><a href="similarProducts.jsp">Similar Products</a></li>
 		<li><a href="login.jsp">Logout</a></li>
 	</ul>
  <% } else { %>
@@ -79,7 +80,7 @@
 		<li><a href="purchases.jsp">Purchases</a></li>
 		<li><a href="login.jsp">Logout</a></li>
 	</ul>
- <% }} %>
+ <% } %>
 </div>
 
 <table class="table table-striped">
