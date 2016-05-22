@@ -56,13 +56,25 @@ String colRange = "WHERE ROWNUM >= " + Integer.toString(session.firstColIndex)
 
 String customersAlphabetical = "SELECT u.name FROM users u WHERE u.role = 'customer'"
                                + " ORDER BY u.name ASC " + rowRange + ";";
+                               
+String statesAlphabetical = "SELECT DISTINCT user.state FROM users user " +
+                            "ORDER BY user.state ASC " + rowRange + ";";                       
               
 String customersByTopK = "SELECT user.name FROM " +
-	"(JOIN users user, (SELECT u_id, SUM(order_amt) FROM " +
+	"(JOIN users user, (SELECT u_id, SUM(order_amt) AS total FROM " +
 	"(SELECT order.user_id AS u_id, order.price * order.quantity AS order_amt FROM " +
 	"(JOIN orders order, products product ON order.product_id = product.id " +
 	"AND product.category_id = " + Integer.toString(session.categoryFilter) +
-	")) GROUP BY order.user_id ORDER BY order_amt DESC) ON user.id = u_id)" + rowRange + ";";
+	")) GROUP BY order.user_id ORDER BY total DESC) ON user.id = u_id) " + rowRange + ";";
+	
+String statesByTopK = "SELECT DISTINCT state FROM " +
+		"(SELECT user.state AS state, SUM(customer_total) AS state_total FROM " +
+		"(JOIN users user, (SELECT u_id, SUM(order_amt) AS customer_total FROM " +
+		"(SELECT order.user_id AS u_id, order.price * order.quantity AS order_amt FROM " +
+		"(JOIN orders order, products product ON order.product_id = product.id " +
+		"AND product.category_id = " + Integer.toString(session.categoryFilter) +
+		")) GROUP BY order.user_id) ON user.id = u_id) " +
+		"GROUP BY user.state ORDER BY state_total DESC) " + rowRange + ";";
 	
 String productsAlphabetical = "SELECT product.name FROM products product WHERE " +
 	"product.category_id = " + Integer.toString(session.categoryFilter) +
