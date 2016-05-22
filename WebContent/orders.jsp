@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*, javax.sql.*, javax.naming.*"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -32,27 +33,27 @@
  <% } %>
 </div>
 <%
-session.rowHeader
-session.sortingOption
-session.categoryFilter
-session.firstRowIndex
-session.firstColIndex
-
 Connection conn = null;
 try {
 	Class.forName("org.postgresql.Driver");
-String url = "jdbc:postgresql:cse135";
-String admin = "moojin";
-String password = "pwd";
-conn = DriverManager.getConnection(url, admin, password);
+	String url = "jdbc:postgresql:cse135";
+	String admin = "moojin";
+	String password = "pwd";
+	conn = DriverManager.getConnection(url, admin, password);
 }
 catch (Exception e) {}
 
-String rowRange = "WHERE ROWNUM >= " + Integer.toString(session.firstRowIndex) 
-				+ "AND ROWNUM < " + Integer.toString(session.firstRowIndex + 20);
+/*session.rowHeader
+session.sortingOption*/
+session.setAttribute( "categoryFilter", 10 );
+session.setAttribute( "firstRowIndex", 1 );
+session.setAttribute( "firstColIndex", 1 );
 
-String colRange = "WHERE ROWNUM >= " + Integer.toString(session.firstColIndex) 
-				+ "AND ROWNUM < " + Integer.toString(session.firstColIndex + 10);
+String rowRange = "WHERE ROWNUM >= " + session.getAttribute( "firstRowIndex" ).toString() 
+				+ "AND ROWNUM < " + Integer.toString(( Integer ) session.getAttribute( "firstRowIndex" ) + 20);
+
+String colRange = "WHERE ROWNUM >= " + session.getAttribute( "firstColIndex" ).toString() 
+				+ "AND ROWNUM < " + Integer.toString(( Integer ) session.getAttribute( "firstColIndex" ) + 10);
 
 String customersAlphabetical = "SELECT u.name FROM users u WHERE u.role = 'customer'"
                                + " ORDER BY u.name ASC " + rowRange + ";";
@@ -64,33 +65,32 @@ String customersByTopK = "SELECT user.name FROM " +
 	"(JOIN users user, (SELECT u_id, SUM(order_amt) AS total FROM " +
 	"(SELECT order.user_id AS u_id, order.price * order.quantity AS order_amt FROM " +
 	"(JOIN orders order, products product ON order.product_id = product.id " +
-	"AND product.category_id = " + Integer.toString(session.categoryFilter) +
-	")) GROUP BY order.user_id ORDER BY total DESC) ON user.id = u_id) " + rowRange + ";";
+	"AND product.category_id = " + session.getAttribute( "categoryFilter" ).toString() +
+	")) GROUP BY order.user_id ORDER BY order_amt DESC) ON user.id = u_id)" + rowRange + ";";
 	
 String statesByTopK = "SELECT DISTINCT state FROM " +
 		"(SELECT user.state AS state, SUM(customer_total) AS state_total FROM " +
 		"(JOIN users user, (SELECT u_id, SUM(order_amt) AS customer_total FROM " +
 		"(SELECT order.user_id AS u_id, order.price * order.quantity AS order_amt FROM " +
 		"(JOIN orders order, products product ON order.product_id = product.id " +
-		"AND product.category_id = " + Integer.toString(session.categoryFilter) +
+		"AND product.category_id = " + session.getAttribute("categoryFilter").toString() +
 		")) GROUP BY order.user_id) ON user.id = u_id) " +
 		"GROUP BY user.state ORDER BY state_total DESC) " + rowRange + ";";
 	
 String productsAlphabetical = "SELECT product.name FROM products product WHERE " +
-	"product.category_id = " + Integer.toString(session.categoryFilter) +
+	"product.category_id = " + session.getAttribute( "categoryFilter" ).toString() +
 	" ORDER BY product.name ASC " + colRange + ";";
 	
 String productsByTopK = "SELECT product.name FROM " +
 	"(SELECT product.id, product.name, SUM(order.price * order.quantity) AS order_amt FROM " +
 	"(JOIN orders order, products product ON order.product_id = product.id " +
-	"AND product.category_id = " + Integer.toString(session.categoryFilter) +
+	"AND product.category_id = " + session.getAttribute( "categoryFilter" ).toString() +
 	") GROUP BY product.id ORDER BY order_amt DESC) " + colRange + ";";
-                             
-                                  
+                                                             
 Statement stmt = conn.createStatement();
 ResultSet rs = stmt.executeQuery("SELECT p.name as product_name, o.quantity, o.price " + 
 	" FROM orders o, products p where o.is_cart = false and o.product_id = p.id and " +
-	" o.user_id = " + session.getAttribute("user_id"));
+	" o.user_id = " + session.getAttribute("user_id").toString() );
 %>
 </body>
 </html>
