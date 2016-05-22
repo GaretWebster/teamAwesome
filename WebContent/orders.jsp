@@ -31,7 +31,54 @@
 	</ul>
  <% } %>
 </div>
-<div>
-<div><h1> Need to implement! Sales Analytics</h1></div>
+<%
+session.rowHeader
+session.sortingOption
+session.categoryFilter
+session.firstRowIndex
+session.firstColIndex
+
+Connection conn = null;
+try {
+	Class.forName("org.postgresql.Driver");
+String url = "jdbc:postgresql:cse135";
+String admin = "moojin";
+String password = "pwd";
+conn = DriverManager.getConnection(url, admin, password);
+}
+catch (Exception e) {}
+
+String rowRange = "WHERE ROWNUM >= " + Integer.toString(session.firstRowIndex) 
+				+ "AND ROWNUM < " + Integer.toString(session.firstRowIndex + 20);
+
+String colRange = "WHERE ROWNUM >= " + Integer.toString(session.firstColIndex) 
+				+ "AND ROWNUM < " + Integer.toString(session.firstColIndex + 10);
+
+String customersAlphabetical = "SELECT u.name FROM users u WHERE u.role = 'customer'"
+                               + " ORDER BY u.name ASC " + rowRange + ";";
+              
+String customersByTopK = "SELECT user.name FROM " +
+	"(JOIN users user, (SELECT u_id, SUM(order_amt) FROM " +
+	"(SELECT order.user_id AS u_id, order.price * order.quantity AS order_amt FROM " +
+	"(JOIN orders order, products product ON order.product_id = product.id " +
+	"AND product.category_id = " + Integer.toString(session.categoryFilter) +
+	")) GROUP BY order.user_id ORDER BY order_amt DESC) ON user.id = u_id)" + rowRange + ";";
+	
+String productsAlphabetical = "SELECT product.name FROM products product WHERE " +
+	"product.category_id = " + Integer.toString(session.categoryFilter) +
+	" ORDER BY product.name ASC " + colRange + ";";
+	
+String productsByTopK = "SELECT product.name FROM " +
+	"(SELECT product.id, product.name, SUM(order.price * order.quantity) AS order_amt FROM " +
+	"(JOIN orders order, products product ON order.product_id = product.id " +
+	"AND product.category_id = " + Integer.toString(session.categoryFilter) +
+	") GROUP BY product.id ORDER BY order_amt DESC) " + colRange + ";";
+                             
+                                  
+Statement stmt = conn.createStatement();
+ResultSet rs = stmt.executeQuery("SELECT p.name as product_name, o.quantity, o.price " + 
+	" FROM orders o, products p where o.is_cart = false and o.product_id = p.id and " +
+	" o.user_id = " + session.getAttribute("user_id"));
+%>
 </body>
 </html>
