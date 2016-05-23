@@ -56,8 +56,8 @@ String colRange = "LIMIT 10 OFFSET " + session.getAttribute( "firstColIndex" ).t
 String customersAlphabetical = "SELECT u.name FROM users u WHERE u.role = 'c'"
                                + " ORDER BY u.name ASC " + rowRange + ";";
                                
-String statesAlphabetical = "SELECT DISTINCT user.state FROM users user " +
-                            "ORDER BY user.state ASC " + rowRange + ";";                       
+String statesAlphabetical = "SELECT DISTINCT u.state FROM users u " +
+                            "ORDER BY u.state ASC " + rowRange + ";";                       
               
 String customersByTopK = "SELECT user.name FROM " +
 	"(JOIN users user, (SELECT u_id, SUM(order_amt) AS total FROM " +
@@ -86,15 +86,15 @@ String productsByTopK = "SELECT product.name FROM " +
 	") GROUP BY product.id ORDER BY order_amt DESC) " + colRange + ";";
                                                              
 Statement stmt = conn.createStatement();
-ResultSet rs = stmt.executeQuery(customersAlphabetical);
+ResultSet rs = stmt.executeQuery(productsAlphabetical);
 %>
 
 <table class="table table-striped">
 	<th>Name</th>
 <% while (rs.next()) { %>
 	<tr>
-	<form action="" method="">
-		<td><%=rs.getString("name")%></td>
+	<form>
+		<td><%=rs.getString("state")%></td>
 	</form>
 	</tr>
 <% } %>
