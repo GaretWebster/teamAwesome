@@ -4,9 +4,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-<title>CSE135 Project</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<title>CSE135 Project</title>
 </head>
 <body style="padding-left:10px;">
 <div class="collapse navbar-collapse">
@@ -60,7 +60,7 @@ if (session.getAttribute("rowHeader").equals("customers")) {
                    + " ORDER BY u.name ASC " + rowRange + ";";
 	}
 	else if (session.getAttribute("sortingOption").equals("topK")) {
-		queryString = "SELECT user.name FROM " +
+		queryString = "SELECT u.name FROM " +
 			"(JOIN users u, (SELECT u_id, SUM(order_amt) AS total FROM " +
 			"(SELECT order.user_id AS u_id, order.price * order.quantity AS order_amt FROM " +
 			"(JOIN orders order, products product ON order.product_id = product.id " +
