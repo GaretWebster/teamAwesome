@@ -45,17 +45,15 @@ catch (Exception e) {}
 
 /*session.rowHeader
 session.sortingOption*/
-session.setAttribute( "categoryFilter", 10 );
+session.setAttribute( "categoryFilter", 11 );
 session.setAttribute( "firstRowIndex", 1 );
 session.setAttribute( "firstColIndex", 1 );
 
-String rowRange = "WHERE ROWNUM >= " + session.getAttribute( "firstRowIndex" ).toString() 
-				+ "AND ROWNUM < " + Integer.toString(( Integer ) session.getAttribute( "firstRowIndex" ) + 20);
+String rowRange = "LIMIT 20 OFFSET " + session.getAttribute( "firstRowIndex" ).toString();
 
-String colRange = "WHERE ROWNUM >= " + session.getAttribute( "firstColIndex" ).toString() 
-				+ "AND ROWNUM < " + Integer.toString(( Integer ) session.getAttribute( "firstColIndex" ) + 10);
+String colRange = "LIMIT 10 OFFSET " + session.getAttribute( "firstColIndex" ).toString();
 
-String customersAlphabetical = "SELECT u.name FROM users u WHERE u.role = 'customer'"
+String customersAlphabetical = "SELECT u.name FROM users u WHERE u.role = 'c'"
                                + " ORDER BY u.name ASC " + rowRange + ";";
               
 String customersByTopK = "SELECT user.name FROM " +
@@ -76,9 +74,18 @@ String productsByTopK = "SELECT product.name FROM " +
 	") GROUP BY product.id ORDER BY order_amt DESC) " + colRange + ";";
                                                              
 Statement stmt = conn.createStatement();
-ResultSet rs = stmt.executeQuery("SELECT p.name as product_name, o.quantity, o.price " + 
-	" FROM orders o, products p where o.is_cart = false and o.product_id = p.id and " +
-	" o.user_id = " + session.getAttribute("user_id").toString() );
+ResultSet rs = stmt.executeQuery(customersAlphabetical);
 %>
+
+<table class="table table-striped">
+	<th>Name</th>
+<% while (rs.next()) { %>
+	<tr>
+	<form action="" method="">
+		<td><%=rs.getString("name")%></td>
+	</form>
+	</tr>
+<% } %>
+</table>
 </body>
 </html>
