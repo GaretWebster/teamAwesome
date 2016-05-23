@@ -45,7 +45,7 @@ catch (Exception e) {}
 
 /*session.rowHeader
 session.sortingOption*/
-session.setAttribute( "categoryFilter", 11 );
+session.setAttribute( "categoryFilter", 12 );
 session.setAttribute( "firstRowIndex", 1 );
 session.setAttribute( "firstColIndex", 1 );
 
@@ -59,31 +59,31 @@ String customersAlphabetical = "SELECT u.name FROM users u WHERE u.role = 'c'"
 String statesAlphabetical = "SELECT DISTINCT u.state FROM users u " +
                             "ORDER BY u.state ASC " + rowRange + ";";                       
               
-String customersByTopK = "SELECT user.name FROM " +
-	"(JOIN users user, (SELECT u_id, SUM(order_amt) AS total FROM " +
-	"(SELECT order.user_id AS u_id, order.price * order.quantity AS order_amt FROM " +
-	"(JOIN orders order, products product ON order.product_id = product.id " +
-	"AND product.category_id = " + session.getAttribute( "categoryFilter" ).toString() +
-	")) GROUP BY order.user_id ORDER BY order_amt DESC) ON user.id = u_id)" + rowRange + ";";
+String customersByTopK = "SELECT u.name FROM " +
+	"(JOIN users u, (SELECT u_id, SUM(order_amt) AS total FROM " +
+	"(SELECT o.user_id AS u_id, o.price * o.quantity AS order_amt FROM " +
+	"(JOIN orders o, products p ON o.product_id = p.id " +
+	"AND p.category_id = " + session.getAttribute( "categoryFilter" ).toString() +
+	")) GROUP BY o.user_id ORDER BY order_amt DESC) ON u.id = u_id)" + rowRange + ";";
 	
 String statesByTopK = "SELECT DISTINCT state FROM " +
-		"(SELECT user.state AS state, SUM(customer_total) AS state_total FROM " +
-		"(JOIN users user, (SELECT u_id, SUM(order_amt) AS customer_total FROM " +
-		"(SELECT order.user_id AS u_id, order.price * order.quantity AS order_amt FROM " +
-		"(JOIN orders order, products product ON order.product_id = product.id " +
-		"AND product.category_id = " + session.getAttribute("categoryFilter").toString() +
-		")) GROUP BY order.user_id) ON user.id = u_id) " +
-		"GROUP BY user.state ORDER BY state_total DESC) " + rowRange + ";";
+		"(SELECT u.state AS state, SUM(customer_total) AS state_total FROM " +
+		"(JOIN users u, (SELECT u_id, SUM(order_amt) AS customer_total FROM " +
+		"(SELECT o.user_id AS u_id, o.price * o.quantity AS order_amt FROM " +
+		"(JOIN orders o, products p ON o.product_id = p.id " +
+		"AND p.category_id = " + session.getAttribute("categoryFilter").toString() +
+		")) GROUP BY o.user_id) ON u.id = u_id) " +
+		"GROUP BY u.state ORDER BY state_total DESC) " + rowRange + ";";
 	
-String productsAlphabetical = "SELECT product.name FROM products product WHERE " +
-	"product.category_id = " + session.getAttribute( "categoryFilter" ).toString() +
-	" ORDER BY product.name ASC " + colRange + ";";
+String productsAlphabetical = "SELECT p.name FROM products p WHERE " +
+	"p.category_id = " + session.getAttribute( "categoryFilter" ).toString() +
+	" ORDER BY p.name ASC " + colRange + ";";
 	
-String productsByTopK = "SELECT product.name FROM " +
-	"(SELECT product.id, product.name, SUM(order.price * order.quantity) AS order_amt FROM " +
-	"(JOIN orders order, products product ON order.product_id = product.id " +
-	"AND product.category_id = " + session.getAttribute( "categoryFilter" ).toString() +
-	") GROUP BY product.id ORDER BY order_amt DESC) " + colRange + ";";
+String productsByTopK = "SELECT p.name FROM " +
+	"(SELECT p.id, p.name, SUM(o.price * o.quantity) AS order_amt FROM " +
+	"(JOIN orders o, products p ON o.product_id = p.id " +
+	"AND p.category_id = " + session.getAttribute( "categoryFilter" ).toString() +
+	") GROUP BY p.id ORDER BY order_amt DESC) " + colRange + ";";
                                                              
 Statement stmt = conn.createStatement();
 ResultSet rs = stmt.executeQuery(productsAlphabetical);
@@ -94,7 +94,7 @@ ResultSet rs = stmt.executeQuery(productsAlphabetical);
 <% while (rs.next()) { %>
 	<tr>
 	<form>
-		<td><%=rs.getString("state")%></td>
+		<td><%=rs.getString("name")%></td>
 	</form>
 	</tr>
 <% } %>
