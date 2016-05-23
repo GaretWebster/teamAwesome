@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 <title>CSE135 Project</title>
 </head>
-<body>
+<body style="padding-left:10px;">
 <div class="collapse navbar-collapse">
 <%  if (session.getAttribute("user_role").equals("o")) { %>
 	<ul class="nav navbar-nav">
@@ -43,7 +43,7 @@ try {
 }
 catch (Exception e) {}
 
-session.setAttribute( "rowHeader", "state" );
+session.setAttribute( "rowHeader", "customers" );
 session.setAttribute( "sortingOption", "alphabetical" );
 session.setAttribute( "categoryFilter", "IS NOT NULL" );
 session.setAttribute( "firstRowIndex", 1 );
@@ -54,7 +54,7 @@ String colRange = "LIMIT 10 OFFSET " + session.getAttribute( "firstColIndex" ).t
 
 String queryString = null;
 
-if (session.getAttribute("rowHeader").equals("user")) {
+if (session.getAttribute("rowHeader").equals("customers")) {
 	if (session.getAttribute("sortingOption").equals("alphabetical")) {
 		queryString = "SELECT u.name FROM users u WHERE u.role = 'c'"
                    + " ORDER BY u.name ASC " + rowRange + ";";
@@ -68,7 +68,7 @@ if (session.getAttribute("rowHeader").equals("user")) {
 			" )) GROUP BY order.user_id ORDER BY order_amt DESC) ON u.id = u_id)" + rowRange + ";";
 	}
 }
-else if (session.getAttribute("rowHeader").equals("state")) {
+else if (session.getAttribute("rowHeader").equals("customers")) {
 	if (session.getAttribute("sortingOption").equals("alphabetical")) {
 		queryString = "SELECT DISTINCT u.state FROM users u " +
                 	  "ORDER BY u.state ASC " + rowRange + ";"; 
@@ -87,11 +87,46 @@ else if (session.getAttribute("rowHeader").equals("state")) {
                                                              
 Statement stmt = conn.createStatement();
 ResultSet rs = stmt.executeQuery(queryString);
+
+Statement columnStmt = conn.createStatement();
+ResultSet columnRS = columnStmt.executeQuery("SELECT * FROM categories");
 %>
+<div class="form-group">
+	<label for="rows">Rows Dropdown Menu</label>
+	<select name="rows" id="rows" class="form-control">
+		<option value="customers">Customers</option>
+		<option value="states">States</option>
+	</select>
+</div>
+<div class="form-group">
+	<label for="order">Order Dropdown Menu</label>
+	<select name="order" id="order" class="form-control">
+		<option value="alphabetical">Alphabetical</option>
+		<option value="topK">TopK</option>
+	</select>
+</div>
+<div class="form-group">
+ 	<label for="salesFilteringOption">Sales Filtering Option</label>
+	<select name="salesFilteringOption" id="salesFilteringOption" class="form-control">
+		<option value="all">All</option>
+		<% while (columnRS.next()) { %>
+			<option value="<%=columnRS.getString("name")%>"><%=columnRS.getString("name")%></option>
+		<% } %>
+	</select>
+</div>
+<div class="form-group">
+	<input class="btn btn-primary" type="submit" name="submit" value="Run Query"/>
+</div>
+
+<div class="form-group">
+	<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Rows"/>
+	<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Columns"/>
+</div>
+
 <table class="table table-striped">
 	<th>Results</th>
 	<% while (rs.next()) { %>
-		<tr><td><%=rs.getString("state")%></td></tr>
+		<tr><td><%=rs.getString("name")%></td></tr>
 	<% } %>
 </table>
 </body>
