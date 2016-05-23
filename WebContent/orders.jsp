@@ -62,10 +62,10 @@ if (session.getAttribute("rowHeader").equals("customers")) {
 	else if (session.getAttribute("sortingOption").equals("topK")) {
 		queryString = "SELECT u.name FROM " +
 			"(JOIN users u, (SELECT u_id, SUM(order_amt) AS total FROM " +
-			"(SELECT order.user_id AS u_id, order.price * order.quantity AS order_amt FROM " +
-			"(JOIN orders order, products product ON order.product_id = product.id " +
-			"AND product.category_id " + session.getAttribute( "categoryFilter" ).toString() +
-			" )) GROUP BY order.user_id ORDER BY order_amt DESC) ON u.id = u_id)" + rowRange + ";";
+			"(SELECT o.user_id AS u_id, o.price * o.quantity AS order_amt FROM " +
+			"(JOIN orders o, products p ON o.product_id = p.id " +
+			"AND p.category_id " + session.getAttribute( "categoryFilter" ).toString() +
+			" )) GROUP BY o.user_id ORDER BY order_amt DESC) ON u.id = u_id)" + rowRange + ";";
 	}
 }
 else if (session.getAttribute("rowHeader").equals("customers")) {
@@ -77,10 +77,10 @@ else if (session.getAttribute("rowHeader").equals("customers")) {
 		queryString = "SELECT DISTINCT state FROM " +
 			"(SELECT u.state AS state, SUM(customer_total) AS state_total FROM " +
 			"(JOIN users u, (SELECT u_id, SUM(order_amt) AS customer_total FROM " +
-			"(SELECT order.user_id AS u_id, order.price * order.quantity AS order_amt FROM " +
-			"(JOIN orders order, products product ON order.product_id = product.id " +
-			"AND product.category_id " + session.getAttribute("categoryFilter").toString() +
-			" )) GROUP BY order.user_id) ON u.id = u_id) " +
+			"(SELECT o.user_id AS u_id, o.price * o.quantity AS order_amt FROM " +
+			"(JOIN orders o, products p ON o.product_id = p.id " +
+			"AND p.category_id " + session.getAttribute("categoryFilter").toString() +
+			" )) GROUP BY o.user_id) ON u.id = u_id) " +
 			"GROUP BY u.state ORDER BY state_total DESC) " + rowRange + ";";
 	}
 }
