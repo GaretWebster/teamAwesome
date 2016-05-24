@@ -44,7 +44,7 @@ try {
 catch (Exception e) {}
 
 session.setAttribute( "rowHeader", "customers" );
-session.setAttribute( "sortingOption", "alphabetical" );
+session.setAttribute( "sortingOption", "topK" );
 session.setAttribute( "categoryFilter", "IS NOT NULL" );
 session.setAttribute( "firstRowIndex", 1 );
 session.setAttribute( "firstColIndex", 1 );
@@ -60,15 +60,15 @@ if (session.getAttribute("rowHeader").equals("customers")) {
                    + " ORDER BY u.name ASC " + rowRange + ";";
 	}
 	else if (session.getAttribute("sortingOption").equals("topK")) {
-		queryString = "SELECT u.name FROM " +
-			"(JOIN users u, (SELECT u_id, SUM(order_amt) AS total FROM " +
+		queryString = "SELECT u.name FROM users u" +
+			"(SELECT u_id, SUM(order_amt) AS total FROM " +
 			"(SELECT o.user_id AS u_id, o.price * o.quantity AS order_amt FROM " +
 			"(JOIN orders o, products p ON o.product_id = p.id " +
 			"AND p.category_id " + session.getAttribute( "categoryFilter" ).toString() +
 			" )) GROUP BY o.user_id ORDER BY order_amt DESC) ON u.id = u_id)" + rowRange + ";";
 	}
 }
-else if (session.getAttribute("rowHeader").equals("customers")) {
+else if (session.getAttribute("rowHeader").equals("state")) {
 	if (session.getAttribute("sortingOption").equals("alphabetical")) {
 		queryString = "SELECT DISTINCT u.state FROM users u " +
                 	  "ORDER BY u.state ASC " + rowRange + ";"; 
