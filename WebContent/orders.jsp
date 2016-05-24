@@ -4,11 +4,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-<title>CSE135 Project</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<title>CSE135 Project</title>
 </head>
-<body>
+<body style="padding-left:10px;">
 <div class="collapse navbar-collapse">
 <%  if (session.getAttribute("user_role").equals("o")) { %>
 	<ul class="nav navbar-nav">
@@ -43,7 +43,7 @@ try {
 }
 catch (Exception e) {}
 
-session.setAttribute( "rowHeader", "state" );
+session.setAttribute( "rowHeader", "user" );
 session.setAttribute( "sortingOption", "topK" );
 session.setAttribute( "categoryFilter", "IS NOT NULL" );
 session.setAttribute( "firstRowIndex", 0 );
@@ -87,7 +87,6 @@ else if (session.getAttribute("rowHeader").equals("state")) {
                 	 "ORDER BY u.state ASC " + rowRange; 
 	}
 	else if (session.getAttribute("sortingOption").equals("topK")) {
-
 		rowHeaders = "SELECT u.state AS row_header, SUM(r.customer_total) AS total FROM " +
 					 "users u JOIN (SELECT o.user_id, SUM(o.price) AS customer_total FROM " +
 					 "orders o JOIN products p ON o.product_id = p.id AND o.is_cart = false " +
@@ -97,20 +96,50 @@ else if (session.getAttribute("rowHeader").equals("state")) {
 	}
 }
 
-/*
-queryString = "SELECT o.user_id AS FROM (orders o JOIN products p ON o.product_id = p.id " +
-			  "AND p.category_id " + session.getAttribute( "categoryFilter" ).toString() + ");";
-*/
-
 Statement stmt = conn.createStatement();
-ResultSet rs = stmt.executeQuery(rowHeaders + ";");
+ResultSet row_headers = stmt.executeQuery(rowHeaders + ";");
+
+stmt = conn.createStatement();
+ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
 
 
 %>
+<div class="form-group">
+	<label for="rows">Rows Dropdown Menu</label>
+	<select name="rows" id="rows" class="form-control">
+		<option value="customers">Customers</option>
+		<option value="states">States</option>
+	</select>
+</div>
+<div class="form-group">
+	<label for="order">Order Dropdown Menu</label>
+	<select name="order" id="order" class="form-control">
+		<option value="alphabetical">Alphabetical</option>
+		<option value="topK">TopK</option>
+	</select>
+</div>
+<div class="form-group">
+ 	<label for="salesFilteringOption">Sales Filtering Option</label>
+	<select name="salesFilteringOption" id="salesFilteringOption" class="form-control">
+		<option value="all">All</option>
+		<% while (categories.next()) { %>
+			<option value="<%=categories.getString("id")%>"><%=categories.getString("name")%></option>
+		<% } %>
+	</select>
+</div>
+<div class="form-group">
+	<input class="btn btn-primary" type="submit" name="submit" value="Run Query"/>
+</div>
+
+<div class="form-group">
+	<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Rows"/>
+	<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Columns"/>
+</div>
+
 <table class="table table-striped">
-	<th>Name</th><th>Total</th>
-	<% while (rs.next()) { %>
-		<tr><td><%=rs.getString("row_header")%></td><td><%=rs.getString("total")%></td></tr>
+	<th>User/State</th><th>Total</th>
+	<% while (row_headers.next()) { %>
+		<tr><td><%=row_headers.getString("row_header")%></td><td><%=row_headers.getString("total")%></td></tr>
 	<% } %>
 </table>
 </body>
