@@ -33,6 +33,33 @@
  <% } %>
 </div>
 <%
+if ("POST".equalsIgnoreCase(request.getMethod())) {
+   
+	session.setAttribute("rowHeader", request.getParameter("rows"));
+	
+	if("all".equalsIgnoreCase(request.getParameter("salesFilteringOption"))){
+		session.setAttribute( "categoryFilter", "IS NOT NULL");
+	}
+	else{
+		session.setAttribute( "categoryFilter", " = " +  request.getParameter("salesFilteringOption"));
+	}
+	
+	session.setAttribute("sortingOption", request.getParameter("order"));
+	
+	if("Next 10 Rows".equalsIgnoreCase(request.getParameter("submit"))){
+		session.setAttribute( "firstRowIndex", (Integer.parseInt(session.getAttribute("firstRowIndex").toString()) + 10) );
+	}
+	if("Next 10 Columns".equalsIgnoreCase(request.getParameter("submit"))){
+		session.setAttribute( "firstColIndex", (Integer.parseInt(session.getAttribute("firstColIndex").toString()) + 10) );
+	}
+}
+else {
+    session.setAttribute( "rowHeader", "user" );
+	session.setAttribute( "sortingOption", "alphabetical" );
+	session.setAttribute( "categoryFilter", "IS NOT NULL" );
+	session.setAttribute( "firstRowIndex", 0 );
+	session.setAttribute( "firstColIndex", 0 );
+}
 Connection conn = null;
 try {
 	Class.forName("org.postgresql.Driver");
@@ -45,12 +72,6 @@ catch (Exception e) {}
 
 int numRows = 20;
 int numCols = 10;
-
-session.setAttribute( "rowHeader", "user" );
-session.setAttribute( "sortingOption", "alphabetical" );
-session.setAttribute( "categoryFilter", "IS NOT NULL" );
-session.setAttribute( "firstRowIndex", 0 );
-session.setAttribute( "firstColIndex", 0 );
 
 String rowRange = "LIMIT " + Integer.toString(numRows) + " OFFSET " + session.getAttribute( "firstRowIndex" ).toString();
 String colRange = "LIMIT " + Integer.toString(numCols) + " OFFSET " + session.getAttribute( "firstColIndex" ).toString();
@@ -69,7 +90,6 @@ else if (session.getAttribute("sortingOption").equals("topK")) {
 	           "AND p.category_id " + categoryFilter + " " +
 			   "GROUP BY p.id ORDER BY product_total DESC " + colRange;
 }
-
 if (session.getAttribute("rowHeader").equals("user")) {
 	String user_set;
 	
@@ -77,9 +97,9 @@ if (session.getAttribute("rowHeader").equals("user")) {
 		user_set = "SELECT u.id, u.name FROM users u WHERE u.role = 'c'"
               + " ORDER BY u.name ASC " + rowRange; 
 					
-		query = "SELECT u.name AS row_name, p.name AS product_name, SUM(o.price) AS total FROM " +
-			   "(" + user_set + ") AS u JOIN (" + product_set + ") AS p JOIN orders o ON p.id = o.product_id " +
-			   "ON o.user_id = u.id GROUP BY u.name, p.name ORDER BY u.name ASC, p.name ASC";
+		query = "SELECT us.name AS row_name, ps.name AS product_name, SUM(o.price) AS total FROM " +
+			   "((" + user_set + ") AS us JOIN (" + product_set + ") AS ps) LEFT JOIN orders o ON p.id = o.product_id " +
+			   "AND o.user_id = u.id GROUP BY us.name, ps.name ORDER BY us.name ASC, ps.name ASC";
 	}
 	else if (session.getAttribute("sortingOption").equals("topK")) {
 		user_set = "SELECT u.id, u.name, customer_total FROM " +
@@ -91,7 +111,7 @@ if (session.getAttribute("rowHeader").equals("user")) {
 		
 		query = "SELECT u.name AS row_name, p.name AS product_name, " + 
 		       "u.customer_total, p.product_total, SUM(o.price) AS total FROM " +
-			   "(" + user_set + ") AS u JOIN (" + product_set + ") AS p JOIN orders o ON p.id = o.product_id " +
+			   "(" + user_set + ") AS u JOIN (" + product_set + ") AS p LEFT JOIN orders o ON p.id = o.product_id " +
 			   "ON o.user_id = u.id GROUP BY u.name, p.name, u.customer_total, p.product_total " +
 			   "ORDER BY u.customer_total DESC, p.product_total DESC";
 	}
@@ -124,47 +144,47 @@ else if (session.getAttribute("rowHeader").equals("state")) {
 				"ORDER BY s.state_total DESC, p.product_total DESC";
 	}
 }
-
 Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-ResultSet results = stmt.executeQuery(query + ";");
 
+System.out.println(query);
+
+ResultSet results = stmt.executeQuery(query + ";");
 stmt = conn.createStatement();
 ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
-
-
 %>
-<div class="form-group">
-	<label for="rows">Rows Dropdown Menu</label>
-	<select name="rows" id="rows" class="form-control">
-		<option value="user">Customers</option>
-		<option value="states">States</option>
-	</select>
-</div>
-<div class="form-group">
-	<label for="order">Order Dropdown Menu</label>
-	<select name="order" id="order" class="form-control">
-		<option value="alphabetical">Alphabetical</option>
-		<option value="topK">TopK</option>
-	</select>
-</div>
-<div class="form-group">
- 	<label for="salesFilteringOption">Sales Filtering Option</label>
-	<select name="salesFilteringOption" id="salesFilteringOption" class="form-control">
-		<option value="all">All</option>
-		<% while (categories.next()) { %>
-			<option value="<%=categories.getString("id")%>"><%=categories.getString("name")%></option>
-		<% } %>
-	</select>
-</div>
-<div class="form-group">
-	<input class="btn btn-primary" type="submit" name="submit" value="Run Query"/>
-</div>
-
-<div class="form-group">
-	<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Rows"/>
-	<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Columns"/>
-</div>
-
+<form action="orders.jsp" method="post">
+	<div class="form-group">
+		<label for="rows">Rows Dropdown Menu</label>
+		<select name="rows" id="rows" class="form-control">
+			<option value="user">Customers</option>
+			<option value="state">States</option>
+		</select>
+	</div>
+	<div class="form-group">
+		<label for="order">Order Dropdown Menu</label>
+		<select name="order" id="order" class="form-control">
+			<option value="alphabetical">Alphabetical</option>
+			<option value="topK">TopK</option>
+		</select>
+	</div>
+	<div class="form-group">
+	 	<label for="salesFilteringOption">Sales Filtering Option</label>
+		<select name="salesFilteringOption" id="salesFilteringOption" class="form-control">
+			<option value="all">All</option>
+			<% while (categories.next()) { %>
+				<option value="<%=categories.getString("id")%>"><%=categories.getString("name")%></option>
+			<% } %>
+		</select>
+	</div>
+	<div class="form-group">
+		<input class="btn btn-primary" type="submit" name="submit" value="Run Query"/>
+	</div>
+	
+	<div class="form-group">
+		<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Rows"/>
+		<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Columns"/>
+	</div>
+</form>
 <table class="table table-striped">
 	<%
 		results.next();
@@ -172,6 +192,7 @@ ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
 		out.print("<th></th>");
 		
 		for (int c = 0; c < numCols; ++c) {
+			System.out.println(results.getString("row_name") + "  " + results.getString("product_name"));
 			out.print("<th>" + results.getString("product_name") + "</th>");
 			results.next();
 		}
