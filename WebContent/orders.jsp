@@ -68,12 +68,6 @@ catch (Exception e) {}
 int numRows = 20;
 int numCols = 10;
 
-session.setAttribute( "rowHeader", "state" );
-session.setAttribute( "sortingOption", "topK" );
-session.setAttribute( "categoryFilter", "IS NOT NULL" );
-session.setAttribute( "firstRowIndex", 0 );
-session.setAttribute( "firstColIndex", 0 );
-
 String rowRange = "LIMIT " + Integer.toString(numRows) + " OFFSET " + session.getAttribute( "firstRowIndex" ).toString();
 String colRange = "LIMIT " + Integer.toString(numCols) + " OFFSET " + session.getAttribute( "firstColIndex" ).toString();
 String categoryFilter = session.getAttribute( "categoryFilter" ).toString();
