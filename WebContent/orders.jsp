@@ -142,10 +142,18 @@ else if (session.getAttribute("rowHeader").equals("state")) {
 				"ORDER BY s.state_total DESC, p.product_total DESC";
 	}
 }
+
 Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-ResultSet results = stmt.executeQuery(query + ";");
+
+if ("POST".equalsIgnoreCase(request.getMethod())) {
+	ResultSet results = stmt.executeQuery(query + ";");
+}
+
 stmt = conn.createStatement();
-ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
+
+if ("POST".equalsIgnoreCase(request.getMethod())) {
+	ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
+}
 %>
 <form action="orders.jsp" method="post">
 	<div class="form-group">
@@ -182,29 +190,32 @@ ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
 </form>
 <table class="table table-striped">
 	<%
-		results.next();
+		if ("POST".equalsIgnoreCase(request.getMethod())) {
 	
-		out.print("<th></th>");
-		
-		for (int c = 0; c < numCols; ++c) {
-			out.print("<th>" + results.getString("product_name") + "</th>");
 			results.next();
-		}
 		
-		results.first();
-		
-		outerloop:
-		for (int r = 0; r < numRows; ++r) {
-			out.print("<tr><td>" + results.getString("row_name") + "</td>");
+			out.print("<th></th>");
 			
 			for (int c = 0; c < numCols; ++c) {
-				out.println("<td>" + new DecimalFormat("0.00##").format(results.getInt("total")) + "</td>");
-				if (!results.next()) {
-					break outerloop;
-				}
+				out.print("<th>" + results.getString("product_name") + "</th>");
+				results.next();
 			}
 			
-			out.print("</tr>");
+			results.first();
+			
+			outerloop:
+			for (int r = 0; r < numRows; ++r) {
+				out.print("<tr><td>" + results.getString("row_name") + "</td>");
+				
+				for (int c = 0; c < numCols; ++c) {
+					out.println("<td>" + new DecimalFormat("0.00##").format(results.getInt("total")) + "</td>");
+					if (!results.next()) {
+						break outerloop;
+					}
+				}
+				
+				out.print("</tr>");
+			}
 		}
 	%>
 </table>
