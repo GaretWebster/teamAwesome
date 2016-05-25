@@ -46,7 +46,7 @@ catch (Exception e) {}
 int numRows = 20;
 int numCols = 10;
 
-session.setAttribute( "rowHeader", "user" );
+session.setAttribute( "rowHeader", "state" );
 session.setAttribute( "sortingOption", "topK" );
 session.setAttribute( "categoryFilter", "IS NOT NULL" );
 session.setAttribute( "firstRowIndex", 0 );
@@ -78,7 +78,7 @@ if (session.getAttribute("rowHeader").equals("user")) {
               + " ORDER BY u.name ASC " + rowRange; 
 					
 		query = "SELECT u.name AS row_name, p.name AS product_name, SUM(o.price) AS total FROM " +
-			   "(" + user_set + ") AS u JOIN ((" + product_set + ") AS p JOIN orders o ON p.id = o.product_id) " +
+			   "(" + user_set + ") AS u JOIN (" + product_set + ") AS p JOIN orders o ON p.id = o.product_id " +
 			   "ON o.user_id = u.id GROUP BY u.name, p.name ORDER BY u.name ASC, p.name ASC";
 	}
 	else if (session.getAttribute("sortingOption").equals("topK")) {
@@ -91,7 +91,7 @@ if (session.getAttribute("rowHeader").equals("user")) {
 		
 		query = "SELECT u.name AS row_name, p.name AS product_name, " + 
 		       "u.customer_total, p.product_total, SUM(o.price) AS total FROM " +
-			   "(" + user_set + ") AS u JOIN ((" + product_set + ") AS p JOIN orders o ON p.id = o.product_id) " +
+			   "(" + user_set + ") AS u JOIN (" + product_set + ") AS p JOIN orders o ON p.id = o.product_id " +
 			   "ON o.user_id = u.id GROUP BY u.name, p.name, u.customer_total, p.product_total " +
 			   "ORDER BY u.customer_total DESC, p.product_total DESC";
 	}
@@ -103,10 +103,10 @@ else if (session.getAttribute("rowHeader").equals("state")) {
 		state_set = "SELECT DISTINCT u.state FROM users u " +
                 	 "ORDER BY u.state ASC " + rowRange;
 		
-		
 		query = "SELECT s.state AS row_name, p.name AS product_name, SUM(o.price) AS total FROM " +
-				"(" + state_set + ") AS s JOIN ((" + product_set + ") AS p JOIN orders o ON p.id = o.product_id) " +
-				"ON o.user_id = u.id GROUP BY u.name, p.name ORDER BY u.name ASC, p.name ASC"; 
+				"(" + state_set + ") AS s JOIN users u ON u.state = s.state " +
+				"JOIN (" + product_set + ") AS p JOIN orders o ON p.id = o.product_id " +
+				"ON u.id = o.user_id GROUP BY s.state, p.name ORDER BY s.state ASC, p.name ASC";
 	}
 	else if (session.getAttribute("sortingOption").equals("topK")) {
 		state_set = "SELECT u.state, SUM(r.customer_total) AS state_total FROM " +
@@ -115,6 +115,13 @@ else if (session.getAttribute("rowHeader").equals("state")) {
 					 "AND p.category_id " + categoryFilter + " " +
 					 "GROUP BY o.user_id) AS r " +
 					 "ON u.id = r.user_id GROUP BY u.state ORDER BY state_total DESC " + rowRange;
+		
+		query = "SELECT s.state AS row_name, p.name AS product_name, " +
+				"s.state_total, p.product_total, SUM(o.price) AS total FROM " +
+				"(" + state_set + ") AS s JOIN users u ON u.state = s.state " +
+				"JOIN (" + product_set + ") AS p JOIN orders o ON p.id = o.product_id " +
+				"ON u.id = o.user_id GROUP BY s.state, p.name, s.state_total, p.product_total " +
+				"ORDER BY s.state_total DESC, p.product_total DESC";
 	}
 }
 
