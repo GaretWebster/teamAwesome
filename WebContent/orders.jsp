@@ -152,7 +152,7 @@ ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
 		<label for="rows">Rows Dropdown Menu</label>
 		<select name="rows" id="rows" class="form-control">
 			<option value="user">Customers</option>
-			<option value="states">States</option>
+			<option value="state">States</option>
 		</select>
 	</div>
 	<div class="form-group">
