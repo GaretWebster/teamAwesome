@@ -36,7 +36,14 @@
 if ("POST".equalsIgnoreCase(request.getMethod())) {
    
 	session.setAttribute("rowHeader", request.getParameter("rows"));
-	    session.setAttribute("categoryFilter", request.getParameter("salesFilteringOption"));
+	
+	if("all".equalsIgnoreCase(request.getParameter("salesFilteringOption"))){
+		session.setAttribute( "categoryFilter", "IS NOT NULL");
+	}
+	else{
+		session.setAttribute( "categoryFilter", " = " +  request.getParameter("salesFilteringOption"));
+	}
+	
 	session.setAttribute("sortingOption", request.getParameter("order"));
 	
 	if("Next 10 Rows".equalsIgnoreCase(request.getParameter("submit"))){
@@ -46,15 +53,13 @@ if ("POST".equalsIgnoreCase(request.getMethod())) {
 		session.setAttribute( "firstColIndex", (Integer.parseInt(session.getAttribute("firstColIndex").toString()) + 10) );
 	}
 }
-
 else {
-    	session.setAttribute( "rowHeader", "user" );
+    session.setAttribute( "rowHeader", "user" );
 	session.setAttribute( "sortingOption", "alphabetical" );
 	session.setAttribute( "categoryFilter", "IS NOT NULL" );
 	session.setAttribute( "firstRowIndex", 0 );
 	session.setAttribute( "firstColIndex", 0 );
 }
-
 Connection conn = null;
 try {
 	Class.forName("org.postgresql.Driver");
@@ -71,10 +76,8 @@ int numCols = 10;
 String rowRange = "LIMIT " + Integer.toString(numRows) + " OFFSET " + session.getAttribute( "firstRowIndex" ).toString();
 String colRange = "LIMIT " + Integer.toString(numCols) + " OFFSET " + session.getAttribute( "firstColIndex" ).toString();
 String categoryFilter = session.getAttribute( "categoryFilter" ).toString();
-
 String product_set = null;
 String query = null;
-
 if (session.getAttribute("sortingOption").equals("alphabetical")) {
 	product_set = "SELECT p.id, p.name FROM products p WHERE p.category_id " + categoryFilter + " " +
 			   "ORDER BY p.name ASC " + colRange;
@@ -85,7 +88,6 @@ else if (session.getAttribute("sortingOption").equals("topK")) {
 	           "AND p.category_id " + categoryFilter + " " +
 			   "GROUP BY p.id ORDER BY product_total DESC " + colRange;
 }
-
 if (session.getAttribute("rowHeader").equals("user")) {
 	String user_set;
 	
@@ -140,14 +142,10 @@ else if (session.getAttribute("rowHeader").equals("state")) {
 				"ORDER BY s.state_total DESC, p.product_total DESC";
 	}
 }
-
 Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 ResultSet results = stmt.executeQuery(query + ";");
-
 stmt = conn.createStatement();
 ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
-
-
 %>
 <form action="orders.jsp" method="post">
 	<div class="form-group">
