@@ -46,8 +46,8 @@ catch (Exception e) {}
 int numRows = 20;
 int numCols = 10;
 
-session.setAttribute( "rowHeader", "state" );
-session.setAttribute( "sortingOption", "topK" );
+session.setAttribute( "rowHeader", "user" );
+session.setAttribute( "sortingOption", "alphabetical" );
 session.setAttribute( "categoryFilter", "IS NOT NULL" );
 session.setAttribute( "firstRowIndex", 0 );
 session.setAttribute( "firstColIndex", 0 );
