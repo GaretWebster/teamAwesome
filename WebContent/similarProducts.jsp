@@ -63,9 +63,10 @@
 		}
 	}
 	
+	String queryString = "SELECT t1.p_id as p1_id, t2.p_id as p2_id, SUM(t1.total_spent * t2.total_spend)/(SUM(t1.total_spent)*sum(t2.total_spend)) AS cos FROM  (SELECT o.user_id, p.id as p_id, SUM(o.price) AS total_spent FROM products p JOIN orders o ON p.id = o.product_id GROUP BY o.user_id, p.id) as t1  JOIN  (SELECT o.user_id, p.id as p_id, SUM(o.price) as total_spend FROM products p JOIN orders o ON p.id = o.product_id GROUP BY o.user_id, p.id) as t2  ON t1.user_id = t2.user_id WHERE t1.p_id < t2.p_id GROUP BY t1.p_id, t2.p_id order by cos DESC LIMIT 100;";
+	
 	Statement stmt = conn.createStatement();
-	ResultSet rs = stmt.executeQuery("SELECT p.id, p.name, p.sku, p.price, c.name as category_name" + 
-		" FROM products p, categories c where is_delete = false and c.id = p.category_id");
+	ResultSet rs = stmt.executeQuery(queryString);
 %>
 <body>
 <div class="collapse navbar-collapse">
@@ -92,8 +93,8 @@
  <% } %>
 </div>
 <table class="table table-striped">
-	<th>Product Name</th>
-	<th>Category Name</th>
+	<th>Category 1 topK</th>
+	<th>Category 2 topK</th>
 	<tr>
 	<form action="products.jsp" method="POST">
 		<td><input name="name"/></td>
@@ -103,8 +104,8 @@
 <% while (rs.next()) { %>
 	<tr>
 	<form action="products.jsp" method="POST">
-		<td><input value="<%=rs.getString("name")%>" name="name" size="15"/>
-		<td><%=rs.getString("category_name")%></td>
+		<td><input value="<%=rs.getString("cos")%>" name="name" size="15"/>
+		<td><%=rs.getString("cos")%></td>
 	</form>
 	</tr>
 <% } %>

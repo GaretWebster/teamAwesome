@@ -47,7 +47,7 @@ int numRows = 20;
 int numCols = 10;
 
 session.setAttribute( "rowHeader", "user" );
-session.setAttribute( "sortingOption", "topK" );
+session.setAttribute( "sortingOption", "alphabetical" );
 session.setAttribute( "categoryFilter", "IS NOT NULL" );
 session.setAttribute( "firstRowIndex", 0 );
 session.setAttribute( "firstColIndex", 0 );
@@ -57,6 +57,7 @@ String colRange = "LIMIT " + Integer.toString(numCols) + " OFFSET " + session.ge
 String categoryFilter = session.getAttribute( "categoryFilter" ).toString();
 
 String product_set = null;
+String user_set = null;
 String query = null;
 
 if (session.getAttribute("sortingOption").equals("alphabetical")) {
@@ -71,14 +72,13 @@ else if (session.getAttribute("sortingOption").equals("topK")) {
 }
 
 if (session.getAttribute("rowHeader").equals("user")) {
-	String user_set;
 	
 	if (session.getAttribute("sortingOption").equals("alphabetical")) {
 		user_set = "SELECT u.id, u.name FROM users u WHERE u.role = 'c'"
               + " ORDER BY u.name ASC " + rowRange; 
 					
 		query = "SELECT u.name AS row_name, p.name AS product_name, SUM(o.price) AS total FROM " +
-			   "(" + user_set + ") AS u JOIN ((" + product_set + ") AS p JOIN orders o ON p.id = o.product_id) " +
+			   "(" + user_set + " AS u) JOIN (" + product_set + " AS p) LEFT JOIN orders o ON p.id = o.product_id " +
 			   "ON o.user_id = u.id GROUP BY u.name, p.name ORDER BY u.name ASC, p.name ASC";
 	}
 	else if (session.getAttribute("sortingOption").equals("topK")) {
@@ -91,7 +91,7 @@ if (session.getAttribute("rowHeader").equals("user")) {
 		
 		query = "SELECT u.name AS row_name, p.name AS product_name, " + 
 		       "u.customer_total, p.product_total, SUM(o.price) AS total FROM " +
-			   "(" + user_set + ") AS u JOIN ((" + product_set + ") AS p JOIN orders o ON p.id = o.product_id) " +
+			   "(" + user_set + ") AS u JOIN (" + product_set + ") AS p LEFT JOIN orders o ON p.id = o.product_id " +
 			   "ON o.user_id = u.id GROUP BY u.name, p.name, u.customer_total, p.product_total " +
 			   "ORDER BY u.customer_total DESC, p.product_total DESC";
 	}
@@ -165,6 +165,7 @@ ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
 		out.print("<th></th>");
 		
 		for (int c = 0; c < numCols; ++c) {
+			System.out.println(results.getString("product_name"));
 			out.print("<th>" + results.getString("product_name") + "</th>");
 			results.next();
 		}
