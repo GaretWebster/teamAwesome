@@ -43,7 +43,7 @@ try {
 }
 catch (Exception e) {}
 
-session.setAttribute( "rowHeader", "customers" );
+session.setAttribute( "rowHeader", "user" );
 session.setAttribute( "sortingOption", "topK" );
 session.setAttribute( "categoryFilter", "IS NOT NULL" );
 session.setAttribute( "firstRowIndex", 0 );
@@ -107,7 +107,7 @@ ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
 <div class="form-group">
 	<label for="rows">Rows Dropdown Menu</label>
 	<select name="rows" id="rows" class="form-control">
-		<option value="customers">Customers</option>
+		<option value="user">Customers</option>
 		<option value="states">States</option>
 	</select>
 </div>
