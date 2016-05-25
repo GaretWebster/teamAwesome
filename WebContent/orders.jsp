@@ -33,6 +33,35 @@
  <% } %>
 </div>
 <%
+if ("POST".equalsIgnoreCase(request.getMethod())) {
+    
+	session.setAttribute("rowHeader", request.getParameter("rows"));
+    session.setAttribute("categoryFilter", request.getParameter("salesFilteringOption"));
+	session.setAttribute("sortingOption", request.getParameter("order"));
+	
+	if("Next 10 Rows".equalsIgnoreCase(request.getParameter("submit"))){
+		session.setAttribute( "firstRowIndex", (Integer.parseInt(request.getParameter("firstRowIndex")) + 10) );
+		session.setAttribute( "firstColIndex", request.getParameter("firstColIndex") );
+	}
+	else if("Next 10 Columns".equalsIgnoreCase(request.getParameter("submit"))){
+		session.setAttribute( "firstColIndex", (Integer.parseInt(request.getParameter("firstColIndex")) + 10) );
+		session.setAttribute( "firstRowIndex", request.getParameter("firstRowIndex") );
+	}
+	else if("Run Query".equalsIgnoreCase(request.getParameter("submit"))){
+		session.setAttribute( "firstRowIndex", request.getParameter("firstRowIndex") );
+		session.setAttribute( "firstColIndex", request.getParameter("firstColIndex") );
+	}
+	else{}
+} 
+
+else {
+    session.setAttribute( "rowHeader", "user" );
+	session.setAttribute( "sortingOption", "alphabetical" );
+	session.setAttribute( "categoryFilter", "IS NOT NULL" );
+	session.setAttribute( "firstRowIndex", 0 );
+	session.setAttribute( "firstColIndex", 0 );
+}
+
 Connection conn = null;
 try {
 	Class.forName("org.postgresql.Driver");
