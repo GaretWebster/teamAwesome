@@ -57,7 +57,7 @@ String colRange = "LIMIT " + Integer.toString(numCols) + " OFFSET " + session.ge
 String categoryFilter = session.getAttribute( "categoryFilter" ).toString();
 
 String product_set = null;
-String data = null;
+String query = null;
 
 if (session.getAttribute("sortingOption").equals("alphabetical")) {
 	product_set = "SELECT p.id, p.name FROM products p WHERE p.category_id " + categoryFilter + " " +
@@ -77,7 +77,7 @@ if (session.getAttribute("rowHeader").equals("user")) {
 		user_set = "SELECT u.id, u.name FROM users u WHERE u.role = 'c'"
               + " ORDER BY u.name ASC " + rowRange; 
 					
-		data = "SELECT u.name AS row_name, p.name AS product_name, SUM(o.price) AS total FROM " +
+		query = "SELECT u.name AS row_name, p.name AS product_name, SUM(o.price) AS total FROM " +
 			   "(" + user_set + ") AS u JOIN ((" + product_set + ") AS p JOIN orders o ON p.id = o.product_id) " +
 			   "ON o.user_id = u.id GROUP BY u.name, p.name ORDER BY u.name ASC, p.name ASC";
 	}
@@ -89,7 +89,7 @@ if (session.getAttribute("rowHeader").equals("user")) {
 				"GROUP BY o.user_id ORDER BY customer_total DESC) AS uncessecary_alias " +
 				"ON u.id = user_id " + rowRange;
 		
-		data = "SELECT u.name AS row_name, p.name AS product_name, " + 
+		query = "SELECT u.name AS row_name, p.name AS product_name, " + 
 		       "u.customer_total, p.product_total, SUM(o.price) AS total FROM " +
 			   "(" + user_set + ") AS u JOIN ((" + product_set + ") AS p JOIN orders o ON p.id = o.product_id) " +
 			   "ON o.user_id = u.id GROUP BY u.name, p.name, u.customer_total, p.product_total " +
@@ -101,7 +101,12 @@ else if (session.getAttribute("rowHeader").equals("state")) {
 	
 	if (session.getAttribute("sortingOption").equals("alphabetical")) {
 		state_set = "SELECT DISTINCT u.state FROM users u " +
-                	 "ORDER BY u.state ASC " + rowRange; 
+                	 "ORDER BY u.state ASC " + rowRange;
+		
+		
+		query = "SELECT s.state AS row_name, p.name AS product_name, SUM(o.price) AS total FROM " +
+				"(" + state_set + ") AS s JOIN ((" + product_set + ") AS p JOIN orders o ON p.id = o.product_id) " +
+				"ON o.user_id = u.id GROUP BY u.name, p.name ORDER BY u.name ASC, p.name ASC"; 
 	}
 	else if (session.getAttribute("sortingOption").equals("topK")) {
 		state_set = "SELECT u.state, SUM(r.customer_total) AS state_total FROM " +
@@ -114,7 +119,7 @@ else if (session.getAttribute("rowHeader").equals("state")) {
 }
 
 Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-ResultSet results = stmt.executeQuery(data + ";");
+ResultSet results = stmt.executeQuery(query + ";");
 
 stmt = conn.createStatement();
 ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
