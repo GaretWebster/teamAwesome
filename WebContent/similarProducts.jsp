@@ -51,11 +51,15 @@
  <% } %>
 </div>
 <table class="table table-striped">
-	<th>Product Name</th>
+	<th>Cosine</th>
+	<th>Product 1 Number</th>
+	<th>Product 2 Number</th>
 <% while (rs.next()) { %>
 	<tr>
 	<form>
 		<td><%=rs.getString("cos")%></td>
+		<td><%=rs.getString("t1.p_id")%></td>
+		<td><%=rs.getString("t2.p_id")%></td>
 	</form>
 	</tr>
 <% } %>
