@@ -162,38 +162,39 @@ ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
 
 
 %>
-<div class="form-group">
-	<label for="rows">Rows Dropdown Menu</label>
-	<select name="rows" id="rows" class="form-control">
-		<option value="user">Customers</option>
-		<option value="states">States</option>
-	</select>
-</div>
-<div class="form-group">
-	<label for="order">Order Dropdown Menu</label>
-	<select name="order" id="order" class="form-control">
-		<option value="alphabetical">Alphabetical</option>
-		<option value="topK">TopK</option>
-	</select>
-</div>
-<div class="form-group">
- 	<label for="salesFilteringOption">Sales Filtering Option</label>
-	<select name="salesFilteringOption" id="salesFilteringOption" class="form-control">
-		<option value="all">All</option>
-		<% while (categories.next()) { %>
-			<option value="<%=categories.getString("id")%>"><%=categories.getString("name")%></option>
-		<% } %>
-	</select>
-</div>
-<div class="form-group">
-	<input class="btn btn-primary" type="submit" name="submit" value="Run Query"/>
-</div>
-
-<div class="form-group">
-	<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Rows"/>
-	<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Columns"/>
-</div>
-
+<form action="orders.jsp" method="post">
+	<div class="form-group">
+		<label for="rows">Rows Dropdown Menu</label>
+		<select name="rows" id="rows" class="form-control">
+			<option value="user">Customers</option>
+			<option value="states">States</option>
+		</select>
+	</div>
+	<div class="form-group">
+		<label for="order">Order Dropdown Menu</label>
+		<select name="order" id="order" class="form-control">
+			<option value="alphabetical">Alphabetical</option>
+			<option value="topK">TopK</option>
+		</select>
+	</div>
+	<div class="form-group">
+	 	<label for="salesFilteringOption">Sales Filtering Option</label>
+		<select name="salesFilteringOption" id="salesFilteringOption" class="form-control">
+			<option value="all">All</option>
+			<% while (categories.next()) { %>
+				<option value="<%=categories.getString("id")%>"><%=categories.getString("name")%></option>
+			<% } %>
+		</select>
+	</div>
+	<div class="form-group">
+		<input class="btn btn-primary" type="submit" name="submit" value="Run Query"/>
+	</div>
+	
+	<div class="form-group">
+		<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Rows"/>
+		<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Columns"/>
+	</div>
+</form>
 <table class="table table-striped">
 	<%
 		results.next();
