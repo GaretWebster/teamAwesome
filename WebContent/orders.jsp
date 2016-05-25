@@ -78,6 +78,7 @@ String colRange = "LIMIT " + Integer.toString(numCols) + " OFFSET " + session.ge
 String categoryFilter = session.getAttribute( "categoryFilter" ).toString();
 String product_set = null;
 String query = null;
+
 if (session.getAttribute("sortingOption").equals("alphabetical")) {
 	product_set = "SELECT p.id, p.name FROM products p WHERE p.category_id " + categoryFilter + " " +
 			   "ORDER BY p.name ASC " + colRange;
@@ -144,15 +145,22 @@ else if (session.getAttribute("rowHeader").equals("state")) {
 }
 
 Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+ResultSet results, categories;
 
 if ("POST".equalsIgnoreCase(request.getMethod())) {
-	ResultSet results = stmt.executeQuery(query + ";");
+	results = stmt.executeQuery(query + ";");
+}
+else{
+	results = stmt.executeQuery("SELECT * FROM categories LIMIT 0;");
 }
 
 stmt = conn.createStatement();
 
 if ("POST".equalsIgnoreCase(request.getMethod())) {
-	ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
+	categories = stmt.executeQuery("SELECT * FROM categories;");
+}
+else{
+	categories = stmt.executeQuery("SELECT * FROM categories LIMIT 0;");
 }
 %>
 <form action="orders.jsp" method="post">
