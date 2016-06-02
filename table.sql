@@ -3,6 +3,8 @@ DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS products CASCADE;
 DROP TABLE IF EXISTS orders CASCADE;
+DROP TABLE IF EXISTS product_totals CASCADE;
+DROP TABLE IF EXISTS state_totals CASCADE;
 
 CREATE TABLE states (
     id    SERIAL PRIMARY KEY,
@@ -43,7 +45,7 @@ CREATE TABLE orders (
 
 CREATE TABLE statesTotal (
 	state_id INTEGER REFERENCES states(id) NOT NULL,
-	category_id INTEGER REFERENCES ,
+	category_id INTEGER REFERENCES categories (id) NOT NULL,
 	total FLOAT NOT NULL
 );
 
