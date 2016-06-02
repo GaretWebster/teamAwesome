@@ -19,7 +19,6 @@
 		<li><a href="carts.jsp">Carts</a></li>
 		<li><a href="purchases.jsp">Purchases</a></li>
 		<li><a href="orders.jsp">Orders</a></li>
-		<li><a href="similarProducts.jsp">Similar Products</a></li>
 		<li><a href="login.jsp">Logout</a></li>
 	</ul>
  <% } else { %>
@@ -33,158 +32,91 @@
  <% } %>
 </div>
 <%
-Connection conn = null;
-try {
-	Class.forName("org.postgresql.Driver");
-	String url = "jdbc:postgresql:cse135";
-	String admin = "moojin";
-	String password = "pwd";
-	conn = DriverManager.getConnection(url, admin, password);
-}
-catch (Exception e) {}
-
-int numRows = 20;
-int numCols = 10;
-
-session.setAttribute( "rowHeader", "user" );
-session.setAttribute( "sortingOption", "alphabetical" );
-session.setAttribute( "categoryFilter", "IS NOT NULL" );
-session.setAttribute( "firstRowIndex", 0 );
-session.setAttribute( "firstColIndex", 0 );
-
-String rowRange = "LIMIT " + Integer.toString(numRows) + " OFFSET " + session.getAttribute( "firstRowIndex" ).toString();
-String colRange = "LIMIT " + Integer.toString(numCols) + " OFFSET " + session.getAttribute( "firstColIndex" ).toString();
-String categoryFilter = session.getAttribute( "categoryFilter" ).toString();
-
-String product_set = null;
-String user_set = null;
-String query = null;
-
-if (session.getAttribute("sortingOption").equals("alphabetical")) {
-	product_set = "SELECT p.id, p.name FROM products p WHERE p.category_id " + categoryFilter + " " +
-			   "ORDER BY p.name ASC " + colRange;
-}
-else if (session.getAttribute("sortingOption").equals("topK")) {
-	product_set = "SELECT p.id, p.name, SUM(o.price) AS product_total FROM " +
-			   "orders o JOIN products p ON o.product_id = p.id AND o.is_cart = false " +
-	           "AND p.category_id " + categoryFilter + " " +
-			   "GROUP BY p.id ORDER BY product_total DESC " + colRange;
-}
-
-if (session.getAttribute("rowHeader").equals("user")) {
+	Connection conn = null;
+	try {
+		Class.forName("org.postgresql.Driver");
+    String url = "jdbc:postgresql:cse135";
+  	String admin = "moojin";
+  	String password = "pwd";
+  	conn = DriverManager.getConnection(url, admin, password);
+	}
+	catch (Exception e) {}
 	
-	if (session.getAttribute("sortingOption").equals("alphabetical")) {
-		user_set = "SELECT u.id, u.name FROM users u WHERE u.role = 'c'"
-              + " ORDER BY u.name ASC " + rowRange; 
-					
-		query = "SELECT u.name AS row_name, p.name AS product_name, SUM(o.price) AS total FROM " +
-			   "(" + user_set + " AS u) JOIN (" + product_set + " AS p) LEFT JOIN orders o ON p.id = o.product_id " +
-			   "ON o.user_id = u.id GROUP BY u.name, p.name ORDER BY u.name ASC, p.name ASC";
+	if ("POST".equalsIgnoreCase(request.getMethod())) {
+		String action = request.getParameter("submit");
+		if (action.equals("insert")) {
+			int queries_num = Integer.parseInt(request.getParameter("queries_num"));
+			Random rand = new Random();
+			int random_num = rand.nextInt(30) + 1;
+			if (queries_num < random_num) random_num = queries_num;
+			Statement stmt = conn.createStatement();
+			stmt.executeQuery("SELECT proc_insert_orders(" + queries_num + "," + random_num + ")");
+			out.println("<script>alert('" + queries_num + " orders are inserted!');</script>");
+		}
+		else if (action.equals("refresh")) {
+			//Need to implement.
+		}
 	}
-	else if (session.getAttribute("sortingOption").equals("topK")) {
-		user_set = "SELECT u.id, u.name, customer_total FROM " +
-				"users u JOIN (SELECT o.user_id, SUM(o.price) AS customer_total FROM " +
-				"orders o JOIN products p ON o.product_id = p.id AND o.is_cart = false " +
-				"AND p.category_id " + categoryFilter + " " + 
-				"GROUP BY o.user_id ORDER BY customer_total DESC) AS uncessecary_alias " +
-				"ON u.id = user_id " + rowRange;
-		
-		query = "SELECT u.name AS row_name, p.name AS product_name, " + 
-		       "u.customer_total, p.product_total, SUM(o.price) AS total FROM " +
-			   "(" + user_set + ") AS u JOIN (" + product_set + ") AS p LEFT JOIN orders o ON p.id = o.product_id " +
-			   "ON o.user_id = u.id GROUP BY u.name, p.name, u.customer_total, p.product_total " +
-			   "ORDER BY u.customer_total DESC, p.product_total DESC";
-	}
-}
-else if (session.getAttribute("rowHeader").equals("state")) {
-	String state_set;
 	
-	if (session.getAttribute("sortingOption").equals("alphabetical")) {
-		state_set = "SELECT DISTINCT u.state FROM users u " +
-                	 "ORDER BY u.state ASC " + rowRange;
-		
-		
-		query = "SELECT s.state AS row_name, p.name AS product_name, SUM(o.price) AS total FROM " +
-				"(" + state_set + ") AS s JOIN ((" + product_set + ") AS p JOIN orders o ON p.id = o.product_id) " +
-				"ON o.user_id = u.id GROUP BY u.name, p.name ORDER BY u.name ASC, p.name ASC"; 
-	}
-	else if (session.getAttribute("sortingOption").equals("topK")) {
-		state_set = "SELECT u.state, SUM(r.customer_total) AS state_total FROM " +
-					 "users u JOIN (SELECT o.user_id, SUM(o.price) AS customer_total FROM " +
-					 "orders o JOIN products p ON o.product_id = p.id AND o.is_cart = false " +
-					 "AND p.category_id " + categoryFilter + " " +
-					 "GROUP BY o.user_id) AS r " +
-					 "ON u.id = r.user_id GROUP BY u.state ORDER BY state_total DESC " + rowRange;
-	}
-}
-
-Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-ResultSet results = stmt.executeQuery(query + ";");
-
-stmt = conn.createStatement();
-ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
-
-
 %>
-<div class="form-group">
-	<label for="rows">Rows Dropdown Menu</label>
-	<select name="rows" id="rows" class="form-control">
-		<option value="user">Customers</option>
-		<option value="states">States</option>
-	</select>
-</div>
-<div class="form-group">
-	<label for="order">Order Dropdown Menu</label>
-	<select name="order" id="order" class="form-control">
-		<option value="alphabetical">Alphabetical</option>
-		<option value="topK">TopK</option>
-	</select>
-</div>
-<div class="form-group">
- 	<label for="salesFilteringOption">Sales Filtering Option</label>
-	<select name="salesFilteringOption" id="salesFilteringOption" class="form-control">
-		<option value="all">All</option>
-		<% while (categories.next()) { %>
-			<option value="<%=categories.getString("id")%>"><%=categories.getString("name")%></option>
-		<% } %>
-	</select>
-</div>
-<div class="form-group">
-	<input class="btn btn-primary" type="submit" name="submit" value="Run Query"/>
-</div>
-
-<div class="form-group">
-	<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Rows"/>
-	<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Columns"/>
-</div>
-
+%>
+<form action="orders.jsp" method="post">
+	<div class="form-group">
+		<label for="rows">Rows Dropdown Menu</label>
+		<select name="rows" id="rows" class="form-control">
+			<option value="user">Customers</option>
+			<option value="state">States</option>
+		</select>
+	</div>
+	<div class="form-group">
+		<label for="order">Order Dropdown Menu</label>
+		<select name="order" id="order" class="form-control">
+			<option value="alphabetical">Alphabetical</option>
+			<option value="topK">TopK</option>
+		</select>
+	</div>
+	<div class="form-group">
+		<input class="btn btn-primary" type="submit" name="submit" value="Run Query"/>
+	</div>
+	
+	<div class="form-group">
+		<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Rows"/>
+		<input class="btn btn-primary" type="submit" name="submit" value="Next 10 Columns"/>
+	</div>
+</form>
 <table class="table table-striped">
 	<%
-		results.next();
-	
+		/*if ("POST".equalsIgnoreCase(request.getMethod())) {
 		out.print("<th></th>");
 		
 		for (int c = 0; c < numCols; ++c) {
 			System.out.println(results.getString("product_name"));
 			out.print("<th>" + results.getString("product_name") + "</th>");
 			results.next();
-		}
 		
-		results.first();
-		
-		outerloop:
-		for (int r = 0; r < numRows; ++r) {
-			out.print("<tr><td>" + results.getString("row_name") + "</td>");
+			out.print("<th></th>");
 			
 			for (int c = 0; c < numCols; ++c) {
-				out.println("<td>" + new DecimalFormat("0.00##").format(results.getInt("total")) + "</td>");
-				if (!results.next()) {
-					break outerloop;
-				}
+				out.print("<th>" + results.getString("product_name") + "</th>");
+				results.next();
 			}
 			
-			out.print("</tr>");
-		}
+			results.first();
+			
+			outerloop:
+			for (int r = 0; r < numRows; ++r) {
+				out.print("<tr><td>" + results.getString("row_name") + "</td>");
+				
+				for (int c = 0; c < numCols; ++c) {
+					out.println("<td>" + new DecimalFormat("0.00##").format(results.getInt("total")) + "</td>");
+					if (!results.next()) {
+						break outerloop;
+					}
+				}
+				
+				out.print("</tr>");
+			}
+		}*/
 	%>
 </table>
 </body>
