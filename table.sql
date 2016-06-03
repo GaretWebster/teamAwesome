@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS state_totals CASCADE;
 
 CREATE TABLE states (
     id    SERIAL PRIMARY KEY,
-    name  TEXT NOT NULL UNIQUE,
+    name  TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE users (
