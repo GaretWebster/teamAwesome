@@ -50,7 +50,7 @@ CREATE TABLE state_totals (
 );
 
 CREATE TABLE product_totals (
-	product_id INTEGER REFERENCES states(id) NOT NULL,
+	product_id INTEGER REFERENCES products(id) NOT NULL,
 	category_id INTEGER REFERENCES categories (id) NOT NULL,
 	t1 FLOAT,
 	t2 FLOAT,
