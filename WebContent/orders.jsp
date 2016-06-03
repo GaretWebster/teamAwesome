@@ -112,9 +112,8 @@
 	}
 	
 	
-	ResultSet results = stmt.executeQuery(query + ";");
-	stmt = conn.createStatement();
-	ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
+	catStmt = conn.createStatement();
+	ResultSet categories = catStmt.executeQuery("SELECT * FROM categories;");
 %>
 <form action="orders.jsp" method="post">
 	<div class="form-group">
