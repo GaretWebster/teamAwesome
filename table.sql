@@ -25,6 +25,7 @@ CREATE TABLE categories (
     description  TEXT NOT NULL
 );
 
+
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
