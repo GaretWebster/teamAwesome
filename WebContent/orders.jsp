@@ -46,6 +46,12 @@
 	
 	if (application.getAttribute("precomputation_done") == null) {
 		
+		stmt = conn.createStatement();
+		stmt.executeUpdate("DELETE FROM product_totals;");
+		
+		stmt = conn.createStatement();
+		stmt.executeUpdate("DELETE FROM state_totals;");
+		
 		/* compute product totals */
 		
 		String get_product_totals_by_state = 
