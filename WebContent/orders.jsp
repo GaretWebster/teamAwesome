@@ -49,7 +49,7 @@
 		
 		String get_product_totals_by_state = 
 				"SELECT p.id AS product_id, u.state_id, SUM(o.price) AS total FROM " +
-				"products p JOIN users u JOIN orders o ON o.product.id = p.id AND " +
+				"products p JOIN users u JOIN orders o ON o.product_id = p.id AND " +
 				"o.user_id = u.id GROUP BY p.id, u.state_id;";			
 		ResultSet totals = stmt.executeQuery(get_product_totals_by_state);
 		
