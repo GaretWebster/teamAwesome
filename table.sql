@@ -44,15 +44,15 @@ CREATE TABLE orders (
     is_cart BOOLEAN NOT NULL
 );
 
-CREATE TABLE statesTotal (
+CREATE TABLE state_totals (
 	state_id INTEGER REFERENCES states(id) NOT NULL,
 	category_id INTEGER REFERENCES categories (id) NOT NULL,
 	total FLOAT NOT NULL
 );
 
 CREATE TABLE product_totals (
-	product_id INTEGER REFERENCES states(id) NOT NULL,
-	category_id INTEGER REFERENCES categories (id) NOT NULL,
+	product_id INTEGER REFERENCES products(id) NOT NULL,
+	category_id INTEGER REFERENCES categories(id) NOT NULL,
 	t1 FLOAT,
 	t2 FLOAT,
 	t3 FLOAT,
