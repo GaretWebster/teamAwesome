@@ -23,11 +23,11 @@
 		String name = request.getParameter("name");
     String role = request.getParameter("role");
     int age = Integer.parseInt(request.getParameter("age"));
-    String state = request.getParameter("state");
+    int stateID = Integer.parseInt(request.getParameter("state"));
     
     Statement stmt = conn.createStatement();
     int result = stmt.executeUpdate(
-    		"INSERT INTO users (name,role,age,state) VALUES ('"+name+"', '"+role+"', '"+age+"', '"+state+"')");
+    		"INSERT INTO users (name,role,age,state_id) VALUES ('"+name+"', '"+role+"', '"+age+"', '"+stateID+"')");
 		if (result == 0) {out.println("<script>alert('sign up fail!');</script>");}
 	}
 %>
