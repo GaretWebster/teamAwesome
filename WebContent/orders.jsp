@@ -44,6 +44,8 @@
 	
 	Statement stmt;
 	
+	/* Precomputation */
+	
 	if (application.getAttribute("precomputation_done") == null) {
 		
 		stmt = conn.createStatement();
@@ -158,6 +160,24 @@
 		application.setAttribute("precomputation_done", true);
 	}
 	
+	/* Perform initial page load */
+	
+	String category_filter = "IS NOT NULL";
+	if (request.getParameter("salesFilteringOption") != null) {
+		category_filter = "= " + request.getParameter("salesFilteringOption");
+	}
+	
+	String get_top_products = "SELECT * FROM product_totals WHERE category_id " + category_filter +
+							  " ORDER BY total DESC LIMIT 50;";
+	stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, 
+			   					ResultSet.CONCUR_READ_ONLY);
+	ResultSet top_products = stmt.executeQuery(get_top_products);
+								 
+	String get_top_states = "SELECT state_id, SUM(total) AS state_total FROM state_totals WHERE category_id " + category_filter +
+							" GROUP BY state_id ORDER BY state_total DESC LIMIT 50";
+	stmt = conn.createStatement();
+	ResultSet top_states = stmt.executeQuery(get_top_states);
+	
 	stmt = conn.createStatement();
 	ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
 %>
@@ -177,6 +197,23 @@
 </form>
 <table class="table table-striped">
 	<%
+		top_products.beforeFirst();
+		while (top_products.next()) {
+			out.println("<th>" + top_products.getInt("product_id") + "</th>");
+		}
+		
+		while (top_states.next()) {
+			out.println("<tr class='" + top_states.getInt("state_id") + "'>");
+			out.println("<td>" + top_states.getInt("state_id") + "</td>");
+			
+			top_products.beforeFirst();
+			while (top_products.next()) {
+				out.println("<td class='" + top_products.getInt("product_id") + "'>" + 
+							 top_products.getDouble("t" + top_states.getInt("state_id")) + "</td>");
+			}
+			
+			out.println("<tr>");
+		}
 	%>
 </table>
 </body>
