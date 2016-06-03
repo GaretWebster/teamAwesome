@@ -167,14 +167,17 @@
 		category_filter = "= " + request.getParameter("salesFilteringOption");
 	}
 	
-	String get_top_products = "SELECT * FROM product_totals WHERE category_id " + category_filter +
-							  " ORDER BY total DESC LIMIT 50;";
+	String get_top_products = "SELECT * FROM product_totals t JOIN products p ON t.product_id = p.id " +
+							  "WHERE p.category_id " + category_filter +
+							  " ORDER BY t.total DESC LIMIT 50;";
 	stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, 
 			   					ResultSet.CONCUR_READ_ONLY);
 	ResultSet top_products = stmt.executeQuery(get_top_products);
 								 
-	String get_top_states = "SELECT state_id, SUM(total) AS state_total FROM state_totals WHERE category_id " + category_filter +
-							" GROUP BY state_id ORDER BY state_total DESC LIMIT 50";
+	String get_top_states = "SELECT s.name, t.state_id, SUM(t.total) AS state_total FROM state_totals t " +
+							"JOIN states s ON t.state_id = s.id " +
+							"WHERE category_id " + category_filter +
+							" GROUP BY t.state_id, s.name ORDER BY state_total DESC LIMIT 50";
 	stmt = conn.createStatement();
 	ResultSet top_states = stmt.executeQuery(get_top_states);
 	
@@ -199,17 +202,18 @@
 	<%
 		top_products.beforeFirst();
 		while (top_products.next()) {
-			out.println("<th>" + top_products.getInt("product_id") + "</th>");
+			out.println("<th>" + top_products.getString("name") + "</th>");
 		}
 		
 		while (top_states.next()) {
-			out.println("<tr class='" + top_states.getInt("state_id") + "'>");
-			out.println("<td>" + top_states.getInt("state_id") + "</td>");
+			out.println("<tr class=state'" + top_states.getInt("state_id") + "'>");
+			out.println("<td>" + top_states.getString("name") + "</td>");
 			
 			top_products.beforeFirst();
 			while (top_products.next()) {
-				out.println("<td class='" + top_products.getInt("product_id") + "'>" + 
-							 top_products.getDouble("t" + top_states.getInt("state_id")) + "</td>");
+				out.println("<td class='state" + top_states.getInt("state_id") + " prod" +
+			                  top_products.getInt("product_id") + "'>" + 
+							  top_products.getDouble("t" + top_states.getInt("state_id")) + "</td>");
 			}
 			
 			out.println("<tr>");
