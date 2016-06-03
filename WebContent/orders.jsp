@@ -42,19 +42,22 @@
 	}
 	catch (Exception e) {}
 	
-	boolean precompute = false;
+	Statement stmt;
 	
-	if (precompute) {
-		Statement stmt = conn.createStatement();
+	if (application.getAttribute("precomputation_done") == null) {
+		
+		/* compute product totals */
 		
 		String get_product_totals_by_state = 
-				"SELECT p.id, u.state_id, SUM(o.price) AS total" +
-				"FROM orders o" +
-				"JOIN products p" +
-				"ON o.product_id = p.id" +
-				"JOIN users u" +
-				"ON o.user_id = u.id" +
-				"GROUP BY p.id, u.state_id;"
+				"SELECT p.id AS product_id, u.state_id, SUM(o.price) AS total " +
+				"FROM orders o " +
+				"JOIN products p " +
+				"ON o.product_id = p.id " +
+				"JOIN users u " +
+				"ON o.user_id = u.id " +
+				"GROUP BY p.id, u.state_id;";
+				
+		stmt = conn.createStatement();
 		ResultSet totals = stmt.executeQuery(get_product_totals_by_state);
 		
 		HashMap<String, Double> product_state_totals = new HashMap<String, Double>();
@@ -68,7 +71,8 @@
 			product_state_totals.put(key, total); 
 		}
 		
-		String get_products = "SELECT p.id, p.category_id FROM products;";
+		stmt = conn.createStatement();
+		String get_products = "SELECT p.id, p.category_id FROM products p;";
 		ResultSet products = stmt.executeQuery(get_products);
 		
 		while (products.next()) {
@@ -94,30 +98,62 @@
 			
 			insert_row += ", " + product_total.toString() + ");";
 			
+			stmt = conn.createStatement();
 			stmt.executeUpdate(insert_row);
 		}
-	
-	}
-
-	if ("POST".equalsIgnoreCase(request.getMethod())) {
-		String action = request.getParameter("submit");
-		if (action.equals("insert")) {
-			int queries_num = Integer.parseInt(request.getParameter("queries_num"));
-			Random rand = new Random();
-			int random_num = rand.nextInt(30) + 1;
-			if (queries_num < random_num) random_num = queries_num;
-			Statement stmt = conn.createStatement();
-			stmt.executeQuery("SELECT proc_insert_orders(" + queries_num + "," + random_num + ")");
-			out.println("<script>alert('" + queries_num + " orders are inserted!');</script>");
+		
+		/* compute state totals */
+		
+		String get_state_totals = 
+			"SELECT s.id AS state_id, p.category_id, SUM(o.price) AS total " +
+			"FROM orders o " +
+			"JOIN products p " +
+			"ON o.product_id = p.id " +
+			"JOIN users u " +
+			"ON o.user_id = u.id " +
+			"JOIN states s " +
+			"ON u.state_id = s.id " +
+			"GROUP BY s.id, p.category_id;";
+		stmt = conn.createStatement();
+		ResultSet state_totals_rs = stmt.executeQuery(get_state_totals);
+		
+		HashMap<String, Double> state_totals = new HashMap<String, Double>();
+		while (state_totals_rs.next()) {
+			Double state_total = state_totals_rs.getDouble("total");
+			
+			int state_id = state_totals_rs.getInt("state_id");
+			int category_id = state_totals_rs.getInt("category_id");
+			String key = Integer.toString(state_id) + " " + Integer.toString(category_id);
+			
+			state_totals.put(key, state_total);
 		}
-		else if (action.equals("refresh")) {
-			//Need to implement.
+		
+		stmt = conn.createStatement();
+		ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
+			
+		while (categories.next()) {
+			int category_id = categories.getInt("id");
+			
+			for (int s = 1; s <= 50; ++s) {
+				String key = Integer.toString(s) + " " + Integer.toString(category_id);
+				
+				Double state_category_total = state_totals.get(key);
+				if (state_category_total == null) {
+					state_category_total = new Double(0);
+				}
+				
+				stmt = conn.createStatement();
+				stmt.executeUpdate("INSERT INTO state_totals VALUES (" +
+								   Integer.toString(s) + ", " + Integer.toString(category_id) +
+								   ", " + state_category_total.toString() + ");");
+			}
 		}
+			
+		application.setAttribute("precomputation_done", true);
 	}
 	
-	
-	catStmt = conn.createStatement();
-	ResultSet categories = catStmt.executeQuery("SELECT * FROM categories;");
+	stmt = conn.createStatement();
+	ResultSet categories = stmt.executeQuery("SELECT * FROM categories;");
 %>
 <form action="orders.jsp" method="post">
 	<div class="form-group">
