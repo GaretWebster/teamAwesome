@@ -53,7 +53,6 @@ CREATE TABLE statesTotal (
 CREATE TABLE product_totals (
 	product_id INTEGER REFERENCES states(id) NOT NULL,
 	category_id INTEGER REFERENCES categories (id) NOT NULL,
-	total FLOAT,
 	t1 FLOAT,
 	t2 FLOAT,
 	t3 FLOAT,
@@ -103,5 +102,6 @@ CREATE TABLE product_totals (
 	t47 FLOAT,
 	t48 FLOAT,
 	t49 FLOAT,
-	t50 FLOAT
+	t50 FLOAT,
+	total FLOAT
 );
